@@ -1,8 +1,10 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
 import { getClient } from "~/lib/graphql";
 import { getSdk } from "~/graphql/generated";
-import type { LoaderFunctionArgs } from "react-router";
+import { useLoaderData, type LoaderFunctionArgs } from "react-router";
+import type { AssocRow } from "~/components/AssociationTable";
+import AssociationTable from "~/components/AssociationTable";
+import { Box, Typography } from "@mui/material";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,7 +12,6 @@ export function meta({}: Route.MetaArgs) {
   { name: "description", content: "Top 10 targets with highest overall association score for lung carcinoma" },
   ];
 }
-
 
 
 export async function loader(_args: LoaderFunctionArgs) {
@@ -21,7 +22,7 @@ export async function loader(_args: LoaderFunctionArgs) {
     .map((r) => ({
       id: r?.target?.id ?? "",
       approvedSymbol: r?.target?.approvedSymbol ?? "",
-      approvedName: r?.target?.id ?? "",
+      approvedName: r?.target?.approvedName ?? "",
       score: r?.score ?? 0,
       datatypeScores: (r?.datatypeScores ?? []).map((d) => ({
         id: d?.id ?? "",
@@ -34,7 +35,15 @@ export async function loader(_args: LoaderFunctionArgs) {
   return { rows };
 }
 
-export default function Home({ loaderData }: Route.ComponentProps) {
-  console.log(loaderData);
-  return <Welcome />;
+export default function Home() {
+    const { rows } = useLoaderData() as { rows: AssocRow[] };
+  return  <Box sx={{paddingX: '10%'}}>
+    <Box sx={{marginY: '20px'}}>
+      <Typography variant="h3" component="h2">
+        Genes associated with lung carcinoma
+      </Typography>
+    </Box>
+    
+    <AssociationTable rows={rows} />
+    </Box>;
 }

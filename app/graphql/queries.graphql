@@ -5,6 +5,7 @@ query lungCarcinomaAssociatedTargets {
         target {
           id
           approvedSymbol
+          approvedName
         }
         score
         datatypeScores {
