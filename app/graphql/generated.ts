@@ -1975,7 +1975,7 @@ export type GeneticVariation = {
 export type LungCarcinomaAssociatedTargetsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type LungCarcinomaAssociatedTargetsQuery = { __typename?: 'Query', disease?: { __typename?: 'Disease', associatedTargets: { __typename?: 'AssociatedTargets', rows: Array<{ __typename?: 'AssociatedTarget', score: number, target: { __typename?: 'Target', id: string, approvedSymbol: string }, datatypeScores: Array<{ __typename?: 'ScoredComponent', id: string, score: number }> }> } } | null };
+export type LungCarcinomaAssociatedTargetsQuery = { __typename?: 'Query', disease?: { __typename?: 'Disease', associatedTargets: { __typename?: 'AssociatedTargets', rows: Array<{ __typename?: 'AssociatedTarget', score: number, target: { __typename?: 'Target', id: string, approvedSymbol: string, approvedName: string }, datatypeScores: Array<{ __typename?: 'ScoredComponent', id: string, score: number }> }> } } | null };
 
 
 export const LungCarcinomaAssociatedTargetsDocument = gql`
@@ -1986,6 +1986,7 @@ export const LungCarcinomaAssociatedTargetsDocument = gql`
         target {
           id
           approvedSymbol
+          approvedName
         }
         score
         datatypeScores {
