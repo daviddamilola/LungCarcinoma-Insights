@@ -82,10 +82,9 @@ export default function BarChart({
     // Chart title
     svg
       .append("text")
-      .attr("x", width / 2)
       .attr("y", 25)
-      .attr("text-anchor", "middle")
-      .attr("font-weight", "bold")
+      .attr("text-anchor", "left")
+      .attr("fill", "#9f9f9fff")
       .attr("font-size", 14)
       .text(title);
 

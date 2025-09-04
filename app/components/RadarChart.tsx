@@ -8,7 +8,7 @@ type Props = { items: RadarItem[]; title: string; };
 
 const styles = {
   wrapper: { display: "flex", justifyContent: "center" },
-  svg: { width: "45%", height: "auto", display: "block" },
+  svg: { width: "60%", height: "auto", display: "block" },
 } as const;
 
 export default function RadarChart({ items, title }: Props) {
@@ -127,11 +127,10 @@ export default function RadarChart({ items, title }: Props) {
     // Title
     svg
       .append("text")
-      .attr("x", width / 2)
-      .attr("y", 10)
-      .attr("text-anchor", "middle")
-      .attr("font-weight", "bold")
-      .attr("font-size", 12)
+      .attr("y", 25)
+      .attr("text-anchor", "left")
+      .attr("fill", "#9f9f9fff")
+      .attr("font-size", 14)
       .text(title);
   }, [items, title]);
 
