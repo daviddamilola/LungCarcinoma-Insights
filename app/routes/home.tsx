@@ -37,13 +37,15 @@ export async function loader(_args: LoaderFunctionArgs) {
 
 export default function Home() {
     const { rows } = useLoaderData() as { rows: AssocRow[] };
-  return  <Box sx={{paddingX: '10%'}}>
-    <Box sx={{marginY: '20px'}}>
-      <Typography variant="h3" component="h2">
-        Genes associated with lung carcinoma
-      </Typography>
+    return (
+    <Box px="10%" mb={20}>
+      <Box my={2}>
+        <Typography variant="h3" component="h2">
+          Genes associated with lung carcinoma
+        </Typography>
+      </Box>
+
+      <AssociationTable rows={rows} />
     </Box>
-    
-    <AssociationTable rows={rows} />
-    </Box>;
+  );
 }
