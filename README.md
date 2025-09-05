@@ -52,7 +52,7 @@ Dockerfile           # multi-stage build
 ---
 
 ## Data Flow (BFF)
-
+We adopt a Backend For Frontend Approach to load the data from the open targets API
 1. **Loader** (`home.tsx`) runs on the server
 2. Uses `getSdk(getClient())` from **codegen** + `graphql-request`
 3. Maps results → `AssocRow[]` (id, symbol, name, score, datatypeScores)
@@ -79,7 +79,8 @@ npm install
 npm run codegen
 ```
 
-> If your codegen emits `import gql from 'graphql-tag'`, ensure runtime deps exist:
+> there might be a need to add type to RequestOptions after codegen.
+`import { GraphQLClient, type RequestOptions } from 'graphql-request';`
 > `npm i graphql graphql-tag`
 
 ### Development
@@ -164,7 +165,7 @@ fly open
 ### Secrets
 
 ```bash
-fly secrets set OT_GRAPHQL_ENDPOINT="https://api.platform.opentargets.org/api/v4/graphql"
+fly secrets set GRAPHQL_API_URL="https://api.platform.opentargets.org/api/v4/graphql"
 ```
 
 ---
@@ -172,13 +173,13 @@ fly secrets set OT_GRAPHQL_ENDPOINT="https://api.platform.opentargets.org/api/v4
 ## 🔁 CI/CD (GitHub Actions)
 
 - **CI** runs Playwright tests on every push/PR
-- **Deploy** only on green build to `main` using Flyctl (`FLY_API_TOKEN` secret)
+- **Deploy** deploys the main branch to fly.io when a merge is done
 
 ---
 
 ## 🧩 Key Components
 
-- **AssociationTable** — MUI table with expand/collapse, tabs, and chart panels
+- **AssociationTable** — MUI table with expand/collapse, tabs, and chart views
 - **BarChart** — D3 vertical bars; labeled axes; title
 - **RadarChart** — D3 radial polygon with rings, spokes, markers, labels
 
