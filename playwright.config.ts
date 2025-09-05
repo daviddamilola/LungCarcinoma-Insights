@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: true,
   retries: 0,
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL: "http://192.168.1.136:3000",
     headless: true,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
@@ -16,7 +16,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "npm run build && npm run start",
-    url: "http://127.0.0.1:5173",
+    url: "http://192.168.1.136:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

@@ -1,87 +1,193 @@
-# Welcome to React Router!
+# Lung Carcinoma Insights
 
-A modern, production-ready template for building full-stack React applications using React Router.
+A web application that visualizes the top gene–disease associations for lung carcinoma, powered by the Open Targets GraphQL API.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+The app fetches association data via GraphQL, processes it server‑side (BFF/SSR), and renders an expandable table with interactive charts.
 
-## Features
+---
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## ✨ Features
 
-## Getting Started
+- **Association Table** — Top 10 genes for lung carcinoma with overall scores; rows expand to reveal charts
+- **Bar Chart** — Per‑datatype association scores (0–1)
+- **Radar Chart** — Multi‑axis overview of scores
+- **Material UI** — Accessible, responsive UI with custom styling
+- **SSR + Data APIs** — React Router v7 Framework mode (server loaders)
+- **E2E Tests** — Playwright tests verify table, tabs, charts, and links
 
-### Installation
+---
 
-Install the dependencies:
+## 🛠️ Tech Stack
+
+- **Framework**: React Router v7 (Framework mode) + Vite
+- **Language**: TypeScript
+- **UI**: Material UI (MUI)
+- **Charts**: D3.js (custom SVG)
+- **GraphQL Client**: `graphql-request`
+- **Codegen**: GraphQL Code Generator
+- **Testing**: Playwright
+- **Deployment**: Fly.io (Docker)
+
+---
+
+## 📂 Project Structure
+
+```
+app/
+  components/        # AssociationTable, BarChart, RadarChart
+  graphql/           # queries.graphql, generated.ts (codegen output)
+  lib/               # graphql client, label helpers
+  routes/            # home.tsx
+  root.tsx           # app document & providers
+build/               # client & server bundles
+public/              # static assets
+tests/e2e/           # Playwright specs
+vite.config.ts       # Vite + SSR bundling (noExternal for MUI/Emotion)
+react-router.config.ts
+codegen.ts           # GraphQL Code Generator config
+fly.toml             # Fly.io config
+Dockerfile           # multi-stage build
+```
+
+---
+
+## Data Flow (BFF)
+We adopt a Backend For Frontend Approach to load the data from the open targets API
+1. **Loader** (`home.tsx`) runs on the server
+2. Uses `getSdk(getClient())` from **codegen** + `graphql-request`
+3. Maps results → `AssocRow[]` (id, symbol, name, score, datatypeScores)
+4. Returns JSON to the route element → renders **AssociationTable**
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js ≥ 20
+- npm ≥ 10
+
+### Install
 
 ```bash
 npm install
 ```
 
-### Development
+### Generate GraphQL SDK
 
-Start the development server with HMR:
+```bash
+npm run codegen
+```
+
+> there might be a need to add type to RequestOptions after codegen.
+`import { GraphQLClient, type RequestOptions } from 'graphql-request';`
+> `npm i graphql graphql-tag`
+
+### Development
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Visit http://localhost:5173
 
-## Building for Production
+### Typecheck
 
-Create a production build:
+```bash
+npm run typecheck
+```
+
+### Build
 
 ```bash
 npm run build
 ```
 
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
+### Start (production)
 
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+npm start
 ```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
 
 ---
 
-Built with ❤️ using React Router.
+## 🧪 Testing (Playwright)
+
+Run E2E tests:
+
+```bash
+npm run test:e2e
+```
+
+Key spec: `tests/e2e/association.spec.ts` — verifies headers, expand/collapse, tabs, bar chart, radar chart (path visible), and external links.
+
+---
+
+## 🔧 Linting & Hooks
+
+- **ESLint (flat config)**
+  - Type‑aware TS rules (typescript‑eslint)
+  - React, hooks, a11y, import sorting, unused imports
+
+```bash
+npm run lint
+npm run lint:fix
+```
+
+---
+
+## ☁️ Deployment (Fly.io)
+
+### Dockerfile
+
+Multi‑stage build → copy built app to slim runtime; server listens on `$PORT`.
+
+### fly.toml (Machines‑style)
+
+```toml
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_start_machines = true
+  auto_stop_machines = "stop"
+  min_machines_running = 0
+```
+
+### Deploy
+
+```bash
+fly auth login
+fly deploy
+fly open
+```
+
+
+### Secrets
+
+```bash
+fly secrets set GRAPHQL_API_URL="https://api.platform.opentargets.org/api/v4/graphql"
+```
+
+---
+
+## 🔁 CI/CD (GitHub Actions)
+
+- **CI** runs Playwright tests on every push/PR
+- **Deploy** deploys the main branch to fly.io when a merge is done
+
+---
+
+## 🧩 Key Components
+
+- **AssociationTable** — MUI table with expand/collapse, tabs, and chart views
+- **BarChart** — D3 vertical bars; labeled axes; title
+- **RadarChart** — D3 radial polygon with rings, spokes, markers, labels
+
+---
+
+---
+
+## 📜 License
+
+MIT — see `LICENSE`.
+
