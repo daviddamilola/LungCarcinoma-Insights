@@ -8,3 +8,5 @@ export type AssocRow = {
   score: number;
   datatypeScores: DataTypeScore[];
 };
+
+export type Datum = { label: string; value: number };
