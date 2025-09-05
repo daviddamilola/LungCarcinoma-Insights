@@ -174,14 +174,6 @@ fly secrets set OT_GRAPHQL_ENDPOINT="https://api.platform.opentargets.org/api/v4
 - **CI** runs Playwright tests on every push/PR
 - **Deploy** only on green build to `main` using Flyctl (`FLY_API_TOKEN` secret)
 
-Workflow outline:
-
-```yaml
-jobs:
-  e2e: { runs-on: ubuntu-latest, steps: [ checkout, setup-node, npm ci, codegen, playwright install, test ] }
-  deploy: { needs: e2e, if: push to main, steps: [ checkout, setup-node, flyctl deploy --remote-only ] }
-```
-
 ---
 
 ## 🧩 Key Components
