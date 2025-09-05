@@ -5,6 +5,8 @@ A web application that visualizes the top gene–disease associations for lung c
 The app fetches association data via GraphQL, processes it server‑side (BFF/SSR), and renders an expandable table with interactive charts.
 
 ---
+## 🚀 Live Version
+The deployed version can be viewed here https://lungcarcinoma-insights.fly.dev/
 
 ## ✨ Features
 
