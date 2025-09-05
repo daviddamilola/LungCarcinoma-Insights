@@ -17,5 +17,7 @@ export default defineConfig({
       '@mui/icons-material',
       '@mui/material/utils'
     ]
-  }
+  },
+  ssr: { noExternal: ['@mui/material', '@mui/icons-material', '@mui/material/utils', "@emotion/react",
+      "@emotion/styled",] }
 });
