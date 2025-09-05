@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 
 import { formatLabel } from "~/lib/labels";
 
+import type { Datum } from "./types";
+
 export type BarItem = { id: string; score: number };
 type Props = {
   items: BarItem[];
@@ -15,6 +17,21 @@ type Props = {
 const styles = {
   container: { display: "flex", justifyContent: "center" },
   svg: { width: "60%", height: "auto", display: "block" },
+   tooltip: {
+    position: "absolute" as const,
+    pointerEvents: "none" as const,
+    opacity: 0,
+    padding: "6px 8px",
+    borderRadius: 6,
+    fontSize: 12,
+    lineHeight: 1.2,
+    background: "rgba(17, 24, 39, 0.92)",
+    color: "#fff",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+    transform: "translate(8px, -50%)",
+    transition: "opacity 120ms ease",
+    zIndex: 1,
+  },
 } as const;
 
 /**
@@ -59,13 +76,33 @@ export default function BarChart({
   height = 360,
   width = 640,
 }: Props) {
-  const ref = useRef<SVGSVGElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!ref.current) return;
+    if (!svgRef.current || !containerRef.current) return;
 
-    const svg = d3.select(ref.current);
+    const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
+
+    let tooltip = d3
+      .select(containerRef.current)
+      .select<HTMLDivElement>(".d3-tooltip");
+
+    if (tooltip.empty()) {
+      tooltip = d3
+        .select(containerRef.current)
+        .append("div")
+        .attr("class", "d3-tooltip");
+      // apply initial base styles from styles.tooltip
+      Object.entries(styles.tooltip).forEach(([k, v]) => {
+        (tooltip.node() as HTMLDivElement).style.setProperty(
+          // convert camelCase keys to kebab-case for CSS
+          k.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`),
+          String(v)
+        );
+      });
+    }
 
     const margin = { top: 60, right: 20, bottom: 60, left: 70 };
     const w = width - margin.left - margin.right;
@@ -77,13 +114,13 @@ export default function BarChart({
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const data = items.map((d) => ({
+    const data: Datum[] = items.map((d) => ({
       label: formatLabel(d.id),
       value: d.score ?? 0,
     }));
 
     const x = d3
-      .scaleBand()
+      .scaleBand<string>()
       .domain(data.map((d) => d.label))
       .range([0, w])
       .padding(0.3);
@@ -111,16 +148,56 @@ export default function BarChart({
       .selectAll("text")
       .attr("font-size", 10);
 
-    // Bars
-    g.selectAll(".bar")
+
+    
+    const fmt = d3.format(".3f");
+    const bars = g
+      .selectAll<SVGRectElement, Datum>("rect.bar")
       .data(data)
       .enter()
       .append("rect")
+      .attr("class", "bar")
       .attr("x", (d) => x(d.label)!)
       .attr("y", (d) => y(d.value))
       .attr("width", x.bandwidth())
       .attr("height", (d) => h - y(d.value))
-      .attr("fill", "#1f77b4"); // blue color
+      .attr("fill", "#1f77b4")
+      .attr("rx", 2)
+      .attr("ry", 2)
+      .attr("tabindex", 0); 
+
+    bars
+      .append("title")
+      .text((d: Datum) => `${d.label}: ${fmt(d.value)}`);
+
+    // Hover interactions
+    bars
+      .on("mouseenter", function (_event, d) {
+        d3.select(this).attr("fill", "#1669a8"); 
+        tooltip.style("opacity", "1").html(
+          `<strong>${d.label}</strong><br/>Score: ${fmt(d.value)}`
+        );
+      })
+      .on("mousemove", function (event) {
+        const [mx] = d3.pointer(event, containerRef.current);
+        tooltip
+          .style("left", `${mx}px`)
+      })
+      .on("mouseleave", function () {
+        d3.select(this).attr("fill", "#1f77b4");
+        tooltip.style("opacity", "0");
+      })
+      // Basic keyboard a11y: show tooltip on focus
+      .on("focus", function (_event, d) {
+        d3.select(this).attr("fill", "#1669a8");
+        tooltip.style("opacity", "1").html(
+          `<strong>${d.label}</strong><br/>Score: ${fmt(d.value)}`
+        );
+      })
+      .on("blur", function () {
+        d3.select(this).attr("fill", "#1f77b4");
+        tooltip.style("opacity", "0");
+      });
 
     // Chart title
     svg
@@ -148,11 +225,15 @@ export default function BarChart({
       .attr("text-anchor", "middle")
       .attr("font-size", 10)
       .text("Association Score");
+
+    return () => {
+      tooltip.remove();
+    };
   }, [items, title, height, width]);
 
   return (
-    <Box sx={styles.container}>
-      <Box component="svg" ref={ref} sx={styles.svg} aria-label={title} />
+    <Box ref={containerRef} sx={styles.container}>
+      <Box component="svg" ref={svgRef} sx={styles.svg} aria-label={title} />
     </Box>
   );
 }

@@ -64,7 +64,7 @@ We adopt a Backend For Frontend Approach to load the data from the open targets 
 
 ### Prerequisites
 
-- Node.js ≥ 20
+- Node.js ≥ 22
 - npm ≥ 10
 
 ### Install
