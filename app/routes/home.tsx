@@ -46,7 +46,7 @@ export default function Home() {
     <Box px="10%" mb={20}>
       <Box my={2}>
         <Typography variant="h3" component="h2">
-          Genes associated with lung carcinoma
+          Top 10 Genes associated with lung carcinoma
         </Typography>
       </Box>
 
