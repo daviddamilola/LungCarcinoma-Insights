@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect,test } from "@playwright/test";
 
 test.describe("Association Table", () => {
   test.beforeEach(async ({ page }) => {
@@ -31,8 +31,8 @@ test.describe("Association Table", () => {
     await expect(radarTab).toBeVisible();
     await collapseBtn.click();
     await expect(expandBtn).toBeVisible();
-    await expect(barTab).not.toBeVisible();
-    await expect(radarTab).not.toBeVisible();
+    await expect(barTab).toBeHidden();
+    await expect(radarTab).toBeHidden();
   });
 
   test("displays bar chart correctly", async ({ page }) => {

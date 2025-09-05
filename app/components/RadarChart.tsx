@@ -1,16 +1,55 @@
+import { Box } from "@mui/material";
 import * as d3 from "d3";
 import { useEffect, useRef } from "react";
-import {Box} from "@mui/material";
+
 import { formatLabel } from "~/lib/labels";
 
 export type RadarItem = { id: string; score: number };
-type Props = { items: RadarItem[]; title: string; };
+type Props = { items: RadarItem[]; title: string };
 
 const styles = {
   wrapper: { display: "flex", justifyContent: "center" },
   svg: { width: "60%", height: "auto", display: "block" },
 } as const;
 
+
+/**
+ * Renders a radar (spider) chart using D3.js inside a responsive SVG.
+ *
+ * Each axis represents a datatype score associated with a gene–disease relationship.
+ * Scores are plotted radially from the center, connected into a polygon, and
+ * annotated with axis labels and concentric grid rings.
+ *
+ * Features:
+ * - Circular grid lines for score levels (0.000 → 1.000).
+ * - Spokes for each datatype dimension.
+ * - Axis labels positioned around the circle using cosine/sine geometry.
+ * - Polygon area filled with semi-transparent blue and stroked outline.
+ * - Markers drawn at each data point for clarity.
+ * - Title displayed above the chart.
+ *
+ * @component
+ *
+ * @param {Object} props - Component props.
+ * @param {RadarItem[]} props.items - Array of `{ id, score }` items representing
+ * datatype identifiers and their scores (0.0 → 1.0).
+ * @param {string} props.title - Title displayed above the chart.
+ *
+ * @example
+ * ```tsx
+ * <RadarChart
+ *   title="Data Type Scores: EGFR and lung carcinoma"
+ *   items={[
+ *     { id: "known_drug", score: 0.7 },
+ *     { id: "literature", score: 0.8 },
+ *     { id: "genetic_association", score: 0.9 },
+ *     { id: "somatic_mutation", score: 0.6 },
+ *   ]}
+ * />
+ * ```
+ *
+ * @returns {JSX.Element} A responsive radar chart rendered in an SVG element.
+ */
 export default function RadarChart({ items, title }: Props) {
   const ref = useRef<SVGSVGElement | null>(null);
 
@@ -32,14 +71,16 @@ export default function RadarChart({ items, title }: Props) {
       .append("g")
       .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
-
-    const data = items.map(d => ({
+    const data = items.map((d) => ({
       label: formatLabel(d.id),
-      value: d.score
+      value: d.score,
     }));
 
     const numberOfAxis = data.length;
-    const angle = d3.scaleLinear().domain([0, numberOfAxis]).range([0, 2 * Math.PI]);
+    const angle = d3
+      .scaleLinear()
+      .domain([0, numberOfAxis])
+      .range([0, 2 * Math.PI]);
     const radiusScale = d3.scaleLinear().domain([0, 1]).range([0, radius]);
 
     // To draw the rings in the radar chart
@@ -49,9 +90,9 @@ export default function RadarChart({ items, title }: Props) {
       .enter()
       .append("circle")
       .attr("class", "grid")
-      .attr("r", d => radiusScale(d))
+      .attr("r", (d) => radiusScale(d))
       .attr("fill", "none")
-      .attr("stroke", "#e5e7eb"); // light gray
+      .attr("stroke", "#e5e7eb");
 
     // To draw the spokes (one per axis) from the center of the circle
     g.selectAll("line.spoke")
@@ -63,7 +104,7 @@ export default function RadarChart({ items, title }: Props) {
       .attr("y1", 0)
       .attr("x2", (_d, i) => Math.cos(angle(i) - Math.PI / 2) * radius)
       .attr("y2", (_d, i) => Math.sin(angle(i) - Math.PI / 2) * radius)
-      .attr("stroke", "#d1d5db"); // slightly darker gray
+      .attr("stroke", "#d1d5db");
 
     // Ring tick labels (stacked on the top vertical axis)
     const fmt = d3.format(".3f");
@@ -73,12 +114,12 @@ export default function RadarChart({ items, title }: Props) {
       .append("text")
       .attr("class", "tick")
       .attr("x", 0)
-      .attr("y", d => -radiusScale(d))
+      .attr("y", (d) => -radiusScale(d))
       .attr("dy", -4)
       .attr("text-anchor", "middle")
       .attr("font-size", 12)
       .attr("fill", "#6b7280")
-      .text(d => fmt(d));
+      .text((d) => fmt(d));
 
     // Axis labels (category names)
     g.selectAll("text.axis-label")
@@ -94,21 +135,19 @@ export default function RadarChart({ items, title }: Props) {
       })
       .attr("dominant-baseline", "middle")
       .attr("font-size", 12)
-      .text(d => d.label);
+      .text((d) => d.label);
 
-    // Polygon path (blue) + points
-    const line = d3
+    const radialLine: d3.LineRadial<number> = d3
       .lineRadial<number>()
-      .radius((v, i) => radiusScale(data[i].value))
+      .radius((_v, i) => radiusScale(data[i].value))
       .angle((_v, i) => angle(i))
       .curve(d3.curveLinearClosed);
 
-
     g.append("path")
-      .datum(data.map(d => d.value))
-      .attr("d", line as any)
-      .attr("fill", "rgba(31, 119, 180, 0.12)") // light blue fill
-      .attr("stroke", "#1f77b4") // blue stroke
+      .datum<number[]>(data.map(d => d.value))
+      .attr("d", (values: number[]) => radialLine(values) ?? "")
+      .attr("fill", "rgba(31, 119, 180, 0.12)")
+      .attr("stroke", "#1f77b4")
       .attr("stroke-width", 1);
 
     // Markers
@@ -117,8 +156,14 @@ export default function RadarChart({ items, title }: Props) {
       .enter()
       .append("circle")
       .attr("class", "point")
-      .attr("cx", (_d, i) => Math.cos(angle(i) - Math.PI / 2) * radiusScale(data[i].value))
-      .attr("cy", (_d, i) => Math.sin(angle(i) - Math.PI / 2) * radiusScale(data[i].value))
+      .attr(
+        "cx",
+        (_d, i) => Math.cos(angle(i) - Math.PI / 2) * radiusScale(data[i].value)
+      )
+      .attr(
+        "cy",
+        (_d, i) => Math.sin(angle(i) - Math.PI / 2) * radiusScale(data[i].value)
+      )
       .attr("r", 3.5)
       .attr("fill", "#ffffff")
       .attr("stroke", "#1f77b4")

@@ -1,6 +1,7 @@
-import * as d3 from "d3";
 import { Box } from "@mui/material";
+import * as d3 from "d3";
 import { useEffect, useRef } from "react";
+
 import { formatLabel } from "~/lib/labels";
 
 export type BarItem = { id: string; score: number };
@@ -16,6 +17,42 @@ const styles = {
   svg: { width: "60%", height: "auto", display: "block" },
 } as const;
 
+/**
+ * Renders a vertical bar chart using D3.js inside a responsive SVG.
+ *
+ * Each bar represents a datatype score associated with a gene–disease relationship.
+ * The chart is fully scalable via SVG `viewBox` and styled to fit within
+ * a centered flex container.
+ *
+ * Features:
+ * - X-axis: formatted datatype labels (from {@link formatLabel}).
+ * - Y-axis: normalized scores from 0.000 to 1.000 (three decimals).
+ * - Bars: blue rectangles sized by score value.
+ * - Chart title and axis labels for context.
+ *
+ * @component
+ *
+ * @param {Object} props - Component props.
+ * @param {BarItem[]} props.items - Array of `{ id, score }` items representing
+ * datatype identifiers and their scores.
+ * @param {string} props.title - Title displayed above the chart.
+ * @param {number} [props.height=360] - Height of the chart in pixels.
+ * @param {number} [props.width=640] - Width of the chart in pixels.
+ *
+ * @example
+ * ```tsx
+ * <BarChart
+ *   title="Data Type Scores: EGFR and lung carcinoma"
+ *   items={[
+ *     { id: "known_drug", score: 0.7 },
+ *     { id: "literature", score: 0.8 },
+ *     { id: "genetic_association", score: 0.9 },
+ *   ]}
+ * />
+ * ```
+ *
+ * @returns {JSX.Element} A responsive bar chart rendered in an SVG element.
+ */
 export default function BarChart({
   items,
   title,
@@ -63,8 +100,14 @@ export default function BarChart({
       .attr("dy", "1.5em")
       .attr("font-size", 8);
 
+    const formatTick = d3.format(".3f");
+    const yAxis: d3.Axis<d3.NumberValue> = d3
+      .axisLeft(y)
+      .ticks(5)
+      .tickFormat((d: d3.NumberValue) => formatTick(Number(d)));
+
     g.append("g")
-      .call(d3.axisLeft(y).ticks(5).tickFormat(d3.format(".3f")) as any)
+      .call(yAxis)
       .selectAll("text")
       .attr("font-size", 10);
 

@@ -1,37 +1,27 @@
-import { useState, Fragment } from "react";
+import { Add, Remove } from "@mui/icons-material";
 import {
+  Box,
+  ButtonBase,
+  Collapse,
+  Link,
+  Paper,
+  Stack,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  IconButton,
-  Typography,
-  Box,
   Tabs,
-  Tab,
-  Collapse,
-  Link,
-  Stack,
   Tooltip,
-  ButtonBase,
+  Typography,
 } from "@mui/material";
+import { Fragment,useState } from "react";
+
 import BarChart from "./BarChart";
 import RadarChart from "./RadarChart";
-import { Add, Remove } from "@mui/icons-material";
-
-export type DataTypeScore = { id: string; score: number };
-
-export type AssocRow = {
-  id: string;
-  approvedSymbol: string;
-  approvedName: string;
-  score: number;
-  datatypeScores: DataTypeScore[];
-  approvedNameRaw: string;
-};
+import type { AssocRow } from "./types";
 
 type Props = { rows: AssocRow[] };
 type TargetLinkProps = { approvedName: string; approvedSymbol: string };
@@ -41,13 +31,18 @@ const styles = {
   expandedBox: { px: 2, py: 2, bgcolor: "background.default" },
   tabsRoot: { minHeight: 36 },
   scoreText: { fontVariantNumeric: "tabular-nums" as const },
-  rowButtonWrapper: { p: 0, width: 48, textAlign: "center", position: 'relative' },
+  rowButtonWrapper: {
+    p: 0,
+    width: 48,
+    textAlign: "center",
+    position: "relative",
+  },
   rowButton: {
     width: "100%",
     height: "100%",
     borderRadius: 0,
     bgcolor: "primary.main",
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     color: "white",
@@ -77,7 +72,7 @@ const styles = {
       borderColor: "grey.300",
     },
   },
-    tabRoot: {
+  tabRoot: {
     minHeight: 36,
     borderColor: "grey.300",
     "& .MuiTab-root": {
@@ -87,19 +82,17 @@ const styles = {
       mr: 1,
       borderRadius: 0,
       color: "text.primary",
-      fontWeight: 500
+      fontWeight: 500,
     },
     "& .MuiTab-root.Mui-selected": {
       bgcolor: "primary.main",
-      color: "common.white",   
-      fontWeight: 700
-    }
+      color: "common.white",
+      fontWeight: 700,
+    },
   },
   tab: { height: 20 },
-  tabWrapper: { borderBottom: 1, borderColor: "grey.300", mb: 2 }
+  tabWrapper: { borderBottom: 1, borderColor: "grey.300", mb: 2 },
 };
-
-
 
 function TargetLink({ approvedName, approvedSymbol }: TargetLinkProps) {
   const href = `https://platform.opentargets.org/target/${encodeURIComponent(approvedName)}`;
@@ -110,6 +103,44 @@ function TargetLink({ approvedName, approvedSymbol }: TargetLinkProps) {
   );
 }
 
+/**
+ * Renders a Material UI table of gene–disease associations with expandable rows.
+ *
+ * Each row displays:
+ * - An expand/collapse button
+ * - The gene's approved symbol (linked to Open Targets)
+ * - The gene's approved name
+ * - The overall association score (numeric, fixed to 3 decimals)
+ *
+ * When expanded, a row reveals a tabbed section where the user can
+ * switch between a **Bar Chart** and a **Radar Chart** visualization
+ * of the per-datatype association scores.
+ *
+ * @component
+ *
+ * @param {Object} props - Component props
+ * @param {AssocRow[]} props.rows - An array of association rows,
+ * each containing the gene symbol, name, overall score, and datatype scores.
+ *
+ * @example
+ * ```tsx
+ * <AssociationTable rows={[
+ *   {
+ *     id: "ENSG00000146648",
+ *     approvedSymbol: "EGFR",
+ *     approvedName: "epidermal growth factor receptor",
+ *     score: 0.894,
+ *     datatypeScores: [
+ *       { id: "known_drug", score: 0.7 },
+ *       { id: "literature", score: 0.8 },
+ *     ],
+ *     approvedNameRaw: "epidermal growth factor receptor"
+ *   }
+ * ]} />
+ * ```
+ *
+ * @returns {JSX.Element} A table with expandable rows and chart visualizations.
+ */
 export default function AssociationTable({ rows }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [tabById, setTabById] = useState<Record<string, 0 | 1>>({}); // 0=bar, 1=radar
